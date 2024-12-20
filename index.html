@@ -3,79 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Voting Page</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        h1 {
-            text-align: center;
-        }
-        .section {
-            margin-bottom: 30px;
-        }
-        .section h2 {
-            margin-bottom: 10px;
-        }
-        .cards {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        .card {
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            padding: 10px;
-            width: 200px;
-            text-align: center;
-            cursor: pointer;
-            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
-        }
-        .card:hover {
-            background-color: #f9f9f9;
-        }
-        #leaderboard {
-            margin-top: 30px;
-        }
-    </style>
-</head>
-<body>
-    <h1>Voting Page</h1>
-
-    <!-- LLM Section -->
-    <div class="section">
-        <h2>LLM Options</h2>
-        <div class="cards" id="llm-cards"></div>
-    </div>
-
-    <!-- VLM Section -->
-    <div class="section">
-        <h2>VLM Options</h2>
-        <div class="cards" id="vlm-cards"></div>
-    </div>
-
-    <!-- Commercial APIs Section -->
-    <div class="section">
-        <h2>Commercial APIs</h2>
-        <div class="cards" id="api-cards"></div>
-    </div>
-
-    <!-- Leaderboard Section -->
-    <div id="leaderboard" class="section">
-        <h2>Leaderboard</h2>
-        <ul id="leaderboard-list"></ul>
-    </div>
-
-    <button onclick="exportToCSV()">Export to CSV</button>
-
+    <title>Options Page</title>
     <script>
-        const votes = JSON.parse(localStorage.getItem('votes')) || {};
-
-        const data = {
-            "LLM Options": [
-                "openai/4o",
-                "claude/sonnet"
+        // Import the JSON data
+        const jsonData = {
+            "LLM_Options": [
                 "meta-llama/Llama-3.3-70B-Instruct",
                 "AIDC-AI/Marco-o1",
                 "deepseek-ai/DeepSeek-V2.5",
@@ -113,7 +45,7 @@
                 "Pro/meta-llama/Meta-Llama-3.1-8B-Instruct",
                 "Pro/google/gemma-2-9b-it"
             ],
-            "VLM Options": [
+            "VLM_Options": [
                 "deepseek-ai/deepseek-vl2",
                 "Qwen/Qwen2-VL-72B-Instruct",
                 "OpenGVLab/InternVL2-26B",
@@ -121,7 +53,7 @@
                 "Pro/OpenGVLab/InternVL2-8B",
                 "TeleAI/TeleMM"
             ],
-            "Commercial APIs": [
+            "Commercial_APIs": [
                 "豆包",
                 "秘塔",
                 "kimi",
@@ -131,59 +63,96 @@
             ]
         };
 
-        function initializeCards(sectionId, options) {
-            const container = document.getElementById(sectionId);
+        // Function to display options dynamically
+        function displayOptions() {
+            const llmContainer = document.getElementById('llm-options');
+            const vlmContainer = document.getElementById('vlm-options');
+            const apiContainer = document.getElementById('commercial-apis');
+
+            populateSection(llmContainer, jsonData.LLM_Options, "LLM");
+            populateSection(vlmContainer, jsonData.VLM_Options, "VLM");
+            populateSection(apiContainer, jsonData.Commercial_APIs, "API");
+        }
+
+        function populateSection(container, options, category) {
             options.forEach(option => {
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.textContent = option;
-                card.onclick = () => vote(option);
-                container.appendChild(card);
+                const listItem = document.createElement('li');
+                listItem.textContent = option;
+
+                const yesButton = document.createElement('button');
+                yesButton.textContent = "Yes";
+                yesButton.onclick = () => handleVote(category, option, "Yes");
+
+                const noButton = document.createElement('button');
+                noButton.textContent = "No";
+                noButton.onclick = () => handleVote(category, option, "No");
+
+                listItem.appendChild(yesButton);
+                listItem.appendChild(noButton);
+                container.appendChild(listItem);
             });
         }
 
-        function vote(option) {
-            if (!votes[option]) {
-                votes[option] = 0;
-            }
-            const confirmation = confirm(`Do you want to vote 'YES' for ${option}?`);
-            if (confirmation) {
-                votes[option]++;
-                localStorage.setItem('votes', JSON.stringify(votes));
-                updateLeaderboard();
-            }
+        // Handle vote and store in local storage (simulate embedded DB)
+        function handleVote(category, option, vote) {
+            const storedVotes = JSON.parse(localStorage.getItem('votes')) || [];
+            const newVote = { category, option, vote };
+            storedVotes.push(newVote);
+            localStorage.setItem('votes', JSON.stringify(storedVotes));
+
+            alert(`You voted ${vote} for ${option}`);
+            updateLeaderboard();
         }
 
+        // Update leaderboard dynamically
         function updateLeaderboard() {
-            const leaderboardList = document.getElementById('leaderboard-list');
-            leaderboardList.innerHTML = '';
-
-            const sortedVotes = Object.entries(votes).sort((a, b) => b[1] - a[1]);
-
-            sortedVotes.forEach(([option, count]) => {
-                const li = document.createElement('li');
-                li.textContent = `${option}: ${count} votes`;
-                leaderboardList.appendChild(li);
-            });
+            const storedVotes = JSON.parse(localStorage.getItem('votes')) || [];
+            const leaderboard = document.getElementById('leaderboard');
+            leaderboard.textContent = `Votes Recorded: ${storedVotes.length}`;
         }
 
+        // Export votes to CSV
         function exportToCSV() {
-            const votesArray = Object.entries(votes).map(([option, count]) => [option, count]);
-            const csvContent = "data:text/csv;charset=utf-8," 
-                + "Option, Votes\n" 
-                + votesArray.map(e => e.join(",")).join("\n");
+            const storedVotes = JSON.parse(localStorage.getItem('votes')) || [];
+            const csvContent = "data:text/csv;charset=utf-8," + 
+                ["Category,Option,Vote", ...storedVotes.map(v => `${v.category},${v.option},${v.vote}`)].join("\n");
 
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "votes_data.csv");
+            const link = document.createElement('a');
+            link.setAttribute('href', encodeURI(csvContent));
+            link.setAttribute('download', 'votes.csv');
             link.click();
         }
 
-        // Initialize all cards
-        initializeCards('llm-cards', data["LLM Options"]);
-        initializeCards('vlm-cards', data["VLM Options"]);
-        initializeCards('api-cards', data["Commercial APIs"]);
+        // Initialize on page load
+        window.onload = () => {
+            displayOptions();
+            updateLeaderboard();
+        };
     </script>
+</head>
+<body>
+    <h1>Options Page</h1>
+
+    <section>
+        <h2>LLM Options</h2>
+        <ul id="llm-options"></ul>
+    </section>
+
+    <section>
+        <h2>VLM Options</h2>
+        <ul id="vlm-options"></ul>
+    </section>
+
+    <section>
+        <h2>Commercial APIs</h2>
+        <ul id="commercial-apis"></ul>
+    </section>
+
+    <section>
+        <h2>Leaderboard</h2>
+        <div id="leaderboard">Votes Recorded: 0</div>
+    </section>
+
+    <button onclick="exportToCSV()">Export Votes to CSV</button>
 </body>
 </html>
