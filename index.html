@@ -1,132 +1,171 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <!-- SEO Meta Tags -->
-  <meta name="description" content="A mobile simulator designed to demonstrate mobile interface design.">
-  <meta name="keywords" content="mobile, simulator, mobile design, mobile app">
-  <meta name="author" content="Your Name or Company">
-  <meta http-equiv="Content-Language" content="en">
-
-  <!-- Canonical Link -->
-  <link rel="canonical" href="https://www.yourwebsite.com/pc-simulator" />
-
-  <!-- Open Graph for Social Media -->
-  <meta property="og:title" content="PC Simulator">
-  <meta property="og:description" content="A mobile simulator designed to demonstrate mobile interface design.">
-  <meta property="og:image" content="https://www.yourwebsite.com/pc-simulator-image.jpg">
-  <meta property="og:url" content="https://www.yourwebsite.com/pc-simulator">
-  <meta property="og:type" content="website">
-
-  <!-- Twitter Card -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="PC Simulator">
-  <meta name="twitter:description" content="A mobile simulator designed to demonstrate mobile interface design.">
-  <meta name="twitter:image" content="https://www.yourwebsite.com/pc-simulator-image.jpg">
-  <meta name="twitter:creator" content="@yourtwitterhandle">
-
-  <!-- Favicon -->
-  <link rel="icon" href="https://www.yourwebsite.com/favicon.ico" type="image/x-icon">
-
-  <!-- Google Analytics -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-XXXXX-Y"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag() {
-      dataLayer.push(arguments);
-    }
-    gtag('js', new Date());
-    gtag('config', 'UA-XXXXX-Y');
-  </script>
-
-  <!-- Microsoft Clarity -->
-  <script type="text/javascript">
-    (function(c,l,a,r,i,t,y) {
-      window.clarity=window.clarity||function(){(clarity.q=clarity.q||[]).push(arguments)};
-      clarity('set', 'anonymizeIP', true);
-      i=l.createElement('script');i.async=1;i.src=r;i.type='text/javascript';
-      t=l.getElementsByTagName('script')[0];t.parentNode.insertBefore(i,t);
-    })(document,window,'script','https://www.clarity.ms/tag/XXXXXX');
-  </script>
-
-  <title>PC Simulator</title>
-
-  <style>
-    /* Global Styles */
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background-color: #f0f0f0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      text-align: center;
-    }
-
-    .mobile-container {
-      width: 360px;
-      height: 640px;
-      border: 16px solid black;
-      border-radius: 16px;
-      background-color: #fff;
-      position: relative;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .content {
-      font-size: 1.2rem;
-      color: #333;
-    }
-
-    /* Adjustments for PC */
-    @media (min-width: 768px) {
-      .mobile-container {
-        width: 600px;
-        height: 1000px;
-      }
-
-      .content {
-        font-size: 1.5rem;
-      }
-    }
-
-    @media (min-width: 1024px) {
-      .mobile-container {
-        width: 800px;
-        height: 1400px;
-      }
-
-      .content {
-        font-size: 1.8rem;
-      }
-    }
-
-    /* Additional responsiveness for larger screens */
-    @media (min-width: 1200px) {
-      body {
-        justify-content: flex-start;
-      }
-
-      .mobile-container {
-        margin-top: 50px;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voting Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        .section {
+            margin-bottom: 30px;
+        }
+        .section h2 {
+            margin-bottom: 10px;
+        }
+        .cards {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .card {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 10px;
+            width: 200px;
+            text-align: center;
+            cursor: pointer;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .card:hover {
+            background-color: #f9f9f9;
+        }
+        #leaderboard {
+            margin-top: 30px;
+        }
+    </style>
 </head>
-
 <body>
-  <div class="mobile-container">
-    <div class="content">
-      <p>Mobile Simulator Screen</p>
-      <p>PC Version: Adjusted for larger screens.</p>
-    </div>
-  </div>
-</body>
+    <h1>Voting Page</h1>
 
+    <!-- LLM Section -->
+    <div class="section">
+        <h2>LLM Options</h2>
+        <div class="cards" id="llm-cards"></div>
+    </div>
+
+    <!-- VLM Section -->
+    <div class="section">
+        <h2>VLM Options</h2>
+        <div class="cards" id="vlm-cards"></div>
+    </div>
+
+    <!-- Commercial APIs Section -->
+    <div class="section">
+        <h2>Commercial APIs</h2>
+        <div class="cards" id="api-cards"></div>
+    </div>
+
+    <!-- Leaderboard Section -->
+    <div id="leaderboard" class="section">
+        <h2>Leaderboard</h2>
+        <ul id="leaderboard-list"></ul>
+    </div>
+
+    <script>
+        const votes = {};
+
+        const data = {
+            "LLM Options": [
+                "meta-llama/Llama-3.3-70B-Instruct",
+                "AIDC-AI/Marco-o1",
+                "deepseek-ai/DeepSeek-V2.5",
+                "Tencent/Hunyuan-A52B-Instruct",
+                "Qwen/Qwen2.5-72B-Instruct-128K",
+                "Qwen/Qwen2.5-72B-Instruct",
+                "Qwen/QwQ-32B-Preview",
+                "Qwen/Qwen2.5-32B-Instruct",
+                "Qwen/Qwen2.5-14B-Instruct",
+                "Qwen/Qwen2.5-7B-Instruct",
+                "Qwen/Qwen2.5-Math-72B-Instruct",
+                "Qwen/Qwen2.5-Coder-32B-Instruct",
+                "Qwen/Qwen2.5-Coder-7B-Instruct",
+                "Qwen/Qwen2-7B-Instruct",
+                "Qwen/Qwen2-1.5B-Instruct",
+                "TeleAI/TeleChat2",
+                "01-ai/Yi-1.5-34B-Chat-16K",
+                "01-ai/Yi-1.5-9B-Chat-16K",
+                "01-ai/Yi-1.5-6B-Chat",
+                "THUDM/glm-4-9b-chat",
+                "Vendor-A/Qwen/Qwen2.5-72B-Instruct",
+                "internlm/internlm2_5-7b-chat",
+                "internlm/internlm2_5-20b-chat",
+                "nvidia/Llama-3.1-Nemotron-70B-Instruct",
+                "meta-llama/Meta-Llama-3.1-405B-Instruct",
+                "meta-llama/Meta-Llama-3.1-70B-Instruct",
+                "meta-llama/Meta-Llama-3.1-8B-Instruct",
+                "google/gemma-2-27b-it",
+                "google/gemma-2-9b-it",
+                "Pro/Qwen/Qwen2.5-7B-Instruct",
+                "Pro/Qwen/Qwen2-7B-Instruct",
+                "Pro/Qwen/Qwen2-1.5B-Instruct",
+                "Pro/THUDM/chatglm3-6b",
+                "Pro/THUDM/glm-4-9b-chat",
+                "Pro/meta-llama/Meta-Llama-3.1-8B-Instruct",
+                "Pro/google/gemma-2-9b-it"
+            ],
+            "VLM Options": [
+                "deepseek-ai/deepseek-vl2",
+                "Qwen/Qwen2-VL-72B-Instruct",
+                "OpenGVLab/InternVL2-26B",
+                "Pro/Qwen/Qwen2-VL-7B-Instruct",
+                "Pro/OpenGVLab/InternVL2-8B",
+                "TeleAI/TeleMM"
+            ],
+            "Commercial APIs": [
+                "豆包",
+                "秘塔",
+                "kimi",
+                "海螺",
+                "智谱",
+                "跃问"
+            ]
+        };
+
+        function initializeCards(sectionId, options) {
+            const container = document.getElementById(sectionId);
+            options.forEach(option => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.textContent = option;
+                card.onclick = () => vote(option);
+                container.appendChild(card);
+            });
+        }
+
+        function vote(option) {
+            if (!votes[option]) {
+                votes[option] = 0;
+            }
+            const confirmation = confirm(`Do you want to vote 'YES' for ${option}?`);
+            if (confirmation) {
+                votes[option]++;
+                updateLeaderboard();
+            }
+        }
+
+        function updateLeaderboard() {
+            const leaderboardList = document.getElementById('leaderboard-list');
+            leaderboardList.innerHTML = '';
+
+            const sortedVotes = Object.entries(votes).sort((a, b) => b[1] - a[1]);
+
+            sortedVotes.forEach(([option, count]) => {
+                const li = document.createElement('li');
+                li.textContent = `${option}: ${count} votes`;
+                leaderboardList.appendChild(li);
+            });
+        }
+
+        // Initialize all cards
+        initializeCards('llm-cards', data["LLM Options"]);
+        initializeCards('vlm-cards', data["VLM Options"]);
+        initializeCards('api-cards', data["Commercial APIs"]);
+    </script>
+</body>
 </html>
