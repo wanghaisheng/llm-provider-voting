@@ -3,56 +3,146 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AI Models Voting Platform">
     <title>AI Models Voting Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
-        /* Previous CSS styles remain the same */
-        
-        .leaderboard-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 1rem;
+        :root {
+            --primary: #2563eb;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --text-secondary: #64748b;
+            --shadow: 0 2px 4px rgba(0,0,0,0.1);
+            --radius: 8px;
         }
 
-        .leaderboard-table th,
-        .leaderboard-table td {
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .user-info {
+            background: var(--card-bg);
+            padding: 1rem;
+            border-radius: var(--radius);
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+            text-align: right;
+            color: var(--text-secondary);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+
+        .card h2 {
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--bg);
+        }
+
+        .option-list {
+            list-style: none;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: center;
             padding: 0.75rem;
-            text-align: left;
-            border-bottom: 1px solid var(--bg-color);
+            border-bottom: 1px solid var(--bg);
         }
 
-        .leaderboard-table th {
-            background: var(--bg-color);
-            font-weight: 600;
+        .option-item:last-child {
+            border-bottom: none;
+        }
+
+        .option-text {
+            flex: 1;
+            margin-right: 1rem;
         }
 
         .vote-count {
-            font-weight: 600;
-            color: var(--primary-color);
+            margin-right: 1rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
         }
 
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 2px solid var(--bg-color);
-            border-radius: 50%;
-            border-top-color: var(--primary-color);
-            animation: spin 1s linear infinite;
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-weight: 500;
+            transition: opacity 0.2s;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .btn-yes {
+            background: var(--success);
+            color: white;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--card-bg);
+            padding: 1rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+            .grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="user-bar">
-            <div class="user-info">
-                <div>User: wanghaisheng</div>
-                <div>UTC: 2024-12-20 19:38:27</div>
-            </div>
+        <div class="user-info">
+            <div>User: wanghaisheng</div>
+            <div>UTC: 2024-12-20 19:28:29</div>
         </div>
 
         <header class="header">
@@ -63,33 +153,28 @@
         <div class="grid">
             <div class="card">
                 <h2>Language Models (LLM)</h2>
-                <ul id="llm-options" class="options-list"></ul>
+                <ul id="llm-list" class="option-list"></ul>
             </div>
 
             <div class="card">
                 <h2>Vision Language Models (VLM)</h2>
-                <ul id="vlm-options" class="options-list"></ul>
+                <ul id="vlm-list" class="option-list"></ul>
             </div>
 
             <div class="card">
                 <h2>Commercial APIs</h2>
-                <ul id="api-options" class="options-list"></ul>
+                <ul id="api-list" class="option-list"></ul>
             </div>
-        </div>
-
-        <div class="card">
-            <h2>Leaderboard</h2>
-            <div id="leaderboard"></div>
         </div>
     </div>
 
     <div id="toast" class="toast"></div>
 
     <script>
-        const WORKER_URL = 'https://your-worker.username.workers.dev';
+        const API_URL = 'https://llm-voting-backend.v2ray-tokyo.workers.dev';
         
         const OPTIONS = {
-            LLM_Options: [
+            llm: [
                 "meta-llama/Llama-3.3-70B-Instruct",
                 "AIDC-AI/Marco-o1",
                 "deepseek-ai/DeepSeek-V2.5",
@@ -116,7 +201,7 @@
                 "nvidia/Llama-3.1-Nemotron-70B-Instruct",
                 "meta-llama/Meta-Llama-3.1-405B-Instruct",
                 "meta-llama/Meta-Llama-3.1-70B-Instruct",
-                "meta-llama/Meta-Llama-3.1-8B-Instruct",
+                "meta-llama/Meta-Llama-3.1-8B-Instruct", 
                 "google/gemma-2-27b-it",
                 "google/gemma-2-9b-it",
                 "Pro/Qwen/Qwen2.5-7B-Instruct",
@@ -127,7 +212,7 @@
                 "Pro/meta-llama/Meta-Llama-3.1-8B-Instruct",
                 "Pro/google/gemma-2-9b-it"
             ],
-            VLM_Options: [
+            vlm: [
                 "deepseek-ai/deepseek-vl2",
                 "Qwen/Qwen2-VL-72B-Instruct",
                 "OpenGVLab/InternVL2-26B",
@@ -135,7 +220,7 @@
                 "Pro/OpenGVLab/InternVL2-8B",
                 "TeleAI/TeleMM"
             ],
-            Commercial_APIs: [
+            api: [
                 "豆包",
                 "秘塔",
                 "kimi",
@@ -145,66 +230,45 @@
             ]
         };
 
-        async function submitVote(option, vote) {
+        async function vote(category, option) {
             try {
-                const response = await fetch(`${WORKER_URL}/vote`, {
+                const response = await fetch(`${API_URL}/vote`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ option, vote })
+                    body: JSON.stringify({
+                        category,
+                        option,
+                        user: 'wanghaisheng'
+                    })
                 });
-                
-                const result = await response.json();
-                if (result.success) {
+
+                if (response.ok) {
                     showToast(`Vote recorded for ${option}`);
-                    updateLeaderboard();
+                    updateVoteCount(category, option);
                 } else {
-                    showToast('Failed to record vote', 'error');
+                    showToast('Error recording vote', 'error');
                 }
             } catch (error) {
-                showToast('Error submitting vote', 'error');
+                showToast('Error recording vote', 'error');
             }
         }
 
-        async function updateLeaderboard() {
-            const leaderboardDiv = document.getElementById('leaderboard');
-            leaderboardDiv.innerHTML = '<div class="loading"></div>';
-            
+        async function getVotes(category, option) {
             try {
-                const response = await fetch(`${WORKER_URL}/leaderboard`);
-                const data = await response.json();
-                
-                const table = document.createElement('table');
-                table.className = 'leaderboard-table';
-                
-                table.innerHTML = `
-                    <thead>
-                        <tr>
-                            <th>Model</th>
-                            <th>Votes</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${Object.entries(data)
-                            .sort(([,a], [,b]) => b - a)
-                            .map(([option, votes]) => `
-                                <tr>
-                                    <td>${option}</td>
-                                    <td class="vote-count">${votes}</td>
-                                </tr>
-                            `).join('')}
-                    </tbody>
-                `;
-                
-                leaderboardDiv.innerHTML = '';
-                leaderboardDiv.appendChild(table);
+                const response = await fetch(`${API_URL}/votes/${category}/${option}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    return data.votes || 0;
+                }
+                return 0;
             } catch (error) {
-                leaderboardDiv.innerHTML = 'Failed to load leaderboard';
+                return 0;
             }
         }
 
-        function createOptionElement(option, category) {
+        function createOptionElement(category, option) {
             const li = document.createElement('li');
             li.className = 'option-item';
             
@@ -212,17 +276,19 @@
             text.className = 'option-text';
             text.textContent = option;
             
-            const buttons = document.createElement('div');
-            buttons.className = 'vote-buttons';
+            const count = document.createElement('span');
+            count.className = 'vote-count';
+            count.id = `vote-count-${category}-${option}`;
+            count.textContent = '0 votes';
             
-            const yesBtn = document.createElement('button');
-            yesBtn.className = 'btn-yes';
-            yesBtn.textContent = 'Yes';
-            yesBtn.onclick = () => submitVote(option, 'yes');
+            const voteBtn = document.createElement('button');
+            voteBtn.className = 'btn btn-yes';
+            voteBtn.textContent = 'Vote';
+            voteBtn.onclick = () => vote(category, option);
             
-            buttons.appendChild(yesBtn);
             li.appendChild(text);
-            li.appendChild(buttons);
+            li.appendChild(count);
+            li.appendChild(voteBtn);
             
             return li;
         }
@@ -238,21 +304,26 @@
             }, 3000);
         }
 
-        function initializeApp() {
-            // Populate options
-            Object.entries(OPTIONS).forEach(([category, options]) => {
-                const container = document.getElementById(category.toLowerCase().replace('_', '-'));
-                options.forEach(option => {
-                    container.appendChild(createOptionElement(option, category));
-                });
-            });
-
-            // Initial leaderboard update
-            updateLeaderboard();
+        async function updateVoteCount(category, option) {
+            const votes = await getVotes(category, option);
+            const element = document.getElementById(`vote-count-${category}-${option}`);
+            if (element) {
+                element.textContent = `${votes} vote${votes !== 1 ? 's' : ''}`;
+            }
         }
 
-        // Start the app
-        initializeApp();
+        async function initializeUI() {
+            for (const [category, options] of Object.entries(OPTIONS)) {
+                const container = document.getElementById(`${category}-list`);
+                for (const option of options) {
+                    const element = createOptionElement(category, option);
+                    container.appendChild(element);
+                    updateVoteCount(category, option);
+                }
+            }
+        }
+
+        window.onload = initializeUI;
     </script>
 </body>
 </html>
